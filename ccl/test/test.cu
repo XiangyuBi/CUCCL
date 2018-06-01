@@ -1,6 +1,7 @@
 #include "../CUCCL_LE/CUCCL_LE.hpp"
 #include "../CUCCL_LE/CUCCL_LE.cuh"
 #include "../CUCCL_NP/CUCCL_NP.cuh"
+#include "../CUCCL_DPL/CUCCL_DPL.cuh"
 
 #include <iomanip>
 #include <iostream>
@@ -71,7 +72,24 @@ void testCCL(char const* flag)
 		    }
 		    cout << endl;
 	    }
-    }
+	}
+	
+	if (flag == "DPL")
+	{
+		CCLDPLGPU ccldpl;
+		ccldpl.CudaCCL(data, labels, width, height, degreeOfConnectivity, threshold);
+
+		cout << "Label Mesh by CCL DPL : " << endl;
+		for (auto i = 0; i < height; i++)
+		{
+			for (auto j = 0; j < width; j++)
+			{
+				cout << setw(3) << labels[i * width + j] << " ";
+			}
+			cout << endl;
+		}
+
+	}
 }
 
 

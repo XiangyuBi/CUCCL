@@ -5,6 +5,7 @@ include_directories(
 file(GLOB HEADERS 
 CUCCL_LE/*.hpp CUCCL_LE/*.cuh CUCCL_LE/*.cu 
 CUCCL_NP/*.h   CUCCL_NP/*.cuh CUCCL_NP/*.cu 
+CUCCL_DPL/*.h  CUCCL_DPL/*.cuh CUCCL_DPL/*.cu
 )
 source_group("Headers" FILES ${HEADERS})
 
