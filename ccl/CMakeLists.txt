@@ -2,7 +2,10 @@ include_directories(
   ${CUDA_TOOLKIT_INCLUDE}
 )
 
-file(GLOB HEADERS CUCCL_LE/*.hpp CUCCL_LE/*.cuh CUCCL_LE/*.cu )
+file(GLOB HEADERS 
+CUCCL_LE/*.hpp CUCCL_LE/*.cuh CUCCL_LE/*.cu 
+CUCCL_NP/*.h   CUCCL_NP/*.cuh CUCCL_NP/*.cu 
+)
 source_group("Headers" FILES ${HEADERS})
 
 cuda_add_executable(ccl 
