@@ -2,7 +2,7 @@
 #define CUCCL_NP_CU
 
 
-#include "CCL_NP_GPU.cuh"
+#include "CUCCL_NP.cuh"
 
 #include <host_defines.h>
 #include <device_launch_parameters.h>
