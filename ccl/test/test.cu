@@ -95,7 +95,7 @@ void testCCL(char const* flag)
 
 int main()
 {
-    testCCL("NP") ;
+    testCCL("DPL") ;
 
 
 }
