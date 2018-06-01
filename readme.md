@@ -3,6 +3,6 @@
 
 ### connected component labeling
 
-Modified from https://github.com/ironhide23586/CUDA-Connected-Component-Labelling
+Modified from https://github.com/zhangxiaoya/CCL
 
 
