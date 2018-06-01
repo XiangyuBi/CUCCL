@@ -5,7 +5,7 @@
 #include <device_launch_parameters.h>
 #include <iostream>
 #include <iomanip>
-
+#include "CUCCL_LE.cuh"
 
 namespace CUCCL{
 
@@ -168,7 +168,7 @@ void CCLLEGPU::CudaCCL(unsigned char* frame, int* labels, int width, int height,
 
 	InitCCL <<<grid, threads >>>(LabelListOnDevice, ReferenceOnDevice, width, height);
 
-	auto initLabel = x<int*>(malloc(sizeof(int) * width * height));
+	auto initLabel = reinterpret_cast<int*>(malloc(sizeof(int) * width * height));
 
 	cudaMemcpy(initLabel, LabelListOnDevice, sizeof(int) * width * height, cudaMemcpyDeviceToHost);
 	std::cout << "Init labels:" << std::endl;
