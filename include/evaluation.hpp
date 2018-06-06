@@ -12,7 +12,7 @@
 
 
 template <CCL>
-class evaluation{
+class Evaluation{
 private:
     CCL algo ;
     cv::Mat image ;
@@ -42,7 +42,7 @@ public:
 }; 
 
 template <CCL>
-double evaluation<CCL>::runTime(int degreeOfConnectivity, unsigned char threshold)
+double Evaluation<CCL>::runTime(int degreeOfConnectivity, unsigned char threshold)
 {
     
     auto t_start = std::chrono::high_resolution_clock::now();
@@ -55,7 +55,7 @@ double evaluation<CCL>::runTime(int degreeOfConnectivity, unsigned char threshol
 }
 
 template <CCL>
-int evaluation<CCL>::runCorrectness(int cpuLabel)
+int Evaluation<CCL>::runCorrectness(int cpuLabel)
 {
     int * curLabel = label ;
     std::vector<int> values ;
