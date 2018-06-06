@@ -11,8 +11,10 @@
 
 using namespace CUCCL ;
 
+#define RUNTEST 1 
 #define RUNTIMETEST 1
 #define CORRECTNESSTEST 1
+#define VISUALIZATION 1
 
 double total_runtime_4 = 0 ;
 double total_runtime_8 = 0 ; 
@@ -93,15 +95,17 @@ void run_test(std::string imageName, std::string cclalgo)
     std::cout << std::endl;
    // delete eval ;
    // eval = nullptr ; 
-    
-
-    
-
-    
-
-
 }
 
+
+void run_visualization(std::string filename, std::string algo)
+{
+    if (algo == "NP")
+    {
+        Visualization<CCLNPGPU> visl( filename.c_str(), 4, 0); 
+    }
+    
+}
 
 int main( int argc, char* argv[])
 {
@@ -121,17 +125,27 @@ int main( int argc, char* argv[])
     }
 
 
-    std::cout << "  CCL algorithm validation : " << std::endl;
-    std::cout << "    @ system    : " << getOsName() << std::endl; 
-    std::cout << "    @ algorithm : " << cclalgo << std::endl;
+    std::cout << "  CCL Algorithm Validation : " << std::endl;
+    std::cout << "    @ System    : " << getOsName() << std::endl; 
+    std::cout << "    @ Algorithm : " << cclalgo << std::endl;
 
-
+    #ifdef RUNTEST
+    
     for ( int i = 3; i < argc; i++)
     {
         std::string current =  path + std::string( argv[i] ) ;
         run_test( current.c_str(), cclalgo) ;
-
-
     }
+    std::cout << "  Validation Summary : " << std::endl ;
+    std::cout << "    @ Algorithm         : " << cclalgo << std::endl;
+    std::cout << "    @ Total Test Images : " << argc - 2 << std::endl ;
+    std::cout << "    @ Average Time per Image Connection-4 (ms) : " << total_runtime_4 / double(argc-2) << std::endl;
+    std::cout << "    @ Average Time per Image Connection-8 (ms) : " << total_runtime_8 / double(argc-2) << std::endl;
+
+    #endif
+
+    #ifdef VISUALIZATION
+    run_visualization( path+std::string(argv[3]), cclalgo ) ;
+    #endif
 	return 1 ;
 }
