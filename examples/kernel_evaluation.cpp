@@ -11,7 +11,7 @@
 
 using namespace CUCCL ;
 
-#define RUNTEST 1 
+//#define RUNTEST 1 
 #define RUNTIMETEST 1
 #define CORRECTNESSTEST 1
 #define VISUALIZATION 1
