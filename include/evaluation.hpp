@@ -9,9 +9,11 @@
 
 #include <vector>
 #include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 
-template <CCL>
+template <class CCL>
 class Evaluation{
 private:
     CCL algo ;
@@ -20,28 +22,28 @@ private:
     std::string image_name ;
 
 public:
-    explicit evaluation(char const* filename)
+    explicit Evaluation(char const* filename)
         : image_name(std::string(filename))
-        , image(cv::Mat(imread(filename, IMREAD_GRAYSCALE)))
+        , image(cv::Mat(cv::imread(filename, cv::IMREAD_GRAYSCALE)))
         {
             label = new int[image.size().width * image.size().height]{0} ;
         } ;
     
-    ~evaluation()
+    ~Evaluation()
     {
         delete[] label ;
         label = nullptr;
     }
 
     double runTime(int degreeOfConnectivity, unsigned char threshold);
-    int    runCorrectness() ;
+    int    runCorrectness(int cpuLabel) ;
 
 
     
 
 }; 
 
-template <CCL>
+template <class CCL>
 double Evaluation<CCL>::runTime(int degreeOfConnectivity, unsigned char threshold)
 {
     
@@ -54,7 +56,7 @@ double Evaluation<CCL>::runTime(int degreeOfConnectivity, unsigned char threshol
     double elaspedTimeMs = std::chrono::duration<double, std::milli>(t_end-t_start).count();
 }
 
-template <CCL>
+template <class CCL>
 int Evaluation<CCL>::runCorrectness(int cpuLabel)
 {
     int * curLabel = label ;

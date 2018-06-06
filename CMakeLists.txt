@@ -4,10 +4,12 @@ project(ECE285GPUProgramming)
 find_package(CUDA QUIET REQUIRED)
 FIND_PACKAGE( OpenCV QUIET)
 
+set (CMAKE_CXX_STANDARD 11)
+
 file(GLOB HEADERS 
 algo/CUCCL_LE/*.hpp algo/CUCCL_LE/*.cuh algo/CUCCL_LE/*.cu 
-algo/CUCCL_NP/*.h   algoCUCCL_NP/*.cuh algoCUCCL_NP/*.cu 
-algoCUCCL_DPL/*.h  algo/CUCCL_DPL/*.cuh algo/CUCCL_DPL/*.cu
+algo/CUCCL_NP/*.h   algo/CUCCL_NP/*.cuh algo/CUCCL_NP/*.cu 
+algo/CUCCL_DPL/*.h  algo/CUCCL_DPL/*.cuh algo/CUCCL_DPL/*.cu
 )
 source_group("Headers" FILES ${HEADERS})
 

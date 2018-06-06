@@ -128,16 +128,16 @@ void CCLNPGPU::CudaCCL(unsigned char* frame, int* labels, int width, int height,
 	auto initLabel = static_cast<int*>(malloc(sizeof(int) * width * height));
 
 	cudaMemcpy(initLabel, LabelListOnDevice, sizeof(int) * width * height, cudaMemcpyDeviceToHost);
-	std::cout << "Init labels:" << std::endl;
+//	std::cout << "Init labels:" << std::endl;
 	for (auto i = 0; i < height; ++i)
 	{
 		for (auto j = 0; j < width; ++j)
 		{
-			std::cout << std::setw(3) << initLabel[i * width + j] << " ";
+//			std::cout << std::setw(3) << initLabel[i * width + j] << " ";
 		}
-		std::cout << std::endl;
+//		std::cout << std::endl;
 	}
-	std::cout << std::endl;
+//	std::cout << std::endl;
 	free(initLabel);
 
 	while (true)

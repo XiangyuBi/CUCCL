@@ -9,6 +9,8 @@
 
 #include <iostream>
 
+using namespace CUCCL ;
+
 #define RUNTIMETEST 1
 #define CORRECTNESSTEST 1
 
@@ -41,28 +43,45 @@ std::string getOsName()
 void run_test(std::string imageName, std::string cclalgo)
 {
 
-    std::cout << "  Testing CCL on image :" << current << std::endl;
-    void* eval ;
+    std::cout << "  Testing CCL on image :" << imageName << std::endl;
+   	double cur_time_4 ;
+	double cur_time_8 ;
     if (cclalgo == "LE")
-    {
-        eval = new Evaluation<CCLLEGPU>( imageName.c_str() );
+    {	
+		Evaluation<CCLLEGPU>* eval = new Evaluation<CCLLEGPU> ( imageName.c_str() ) ;
+		cur_time_4 = eval->runTime(4 , 0 );
+		cur_time_8 = eval->runTime(8 , 0 );
+		delete eval ;
+		eval = nullptr ;
+        //eval = static_cast<Evaluation<CUCCL::CCLLEGPU> >( new Evaluation<CUCCL::CCLLEGPU>( imageName.c_str() ) );
     }
     else if (cclalgo == "DPL" )
     {
-        eval = new Evaluation<CCLDPLGPU>( imageName.c_str());
+     	
+		auto* eval = new Evaluation<CCLDPLGPU>( imageName.c_str() ) ;
+		cur_time_4 = eval->runTime(4, 0);
+		cur_time_8 = eval->runTime(8, 0);
+		delete eval ;
+		eval = nullptr ;
+		// eval = static_cast<Evaluation<CUCCL::CCLDPLGPU> >( new Evaluation<CUCCL::CCLDPLGPU>( imageName.c_str()) );
     }
     else 
-    {
-        eval = new Evaluation<CCLNPGPU>( imageName.c_str() );
+    {	
+		auto* eval = new Evaluation<CCLNPGPU>( imageName.c_str() ) ;
+		cur_time_4 = eval->runTime(4, 0);
+		cur_time_8 = eval->runTime(8, 0);
+		delete eval ;
+		eval = nullptr ;
+       // eval = static_cast<Evaluation<CUCCL::CCLNPGPU> >( new Evaluation<CUCCL::CCLNPGPU>( imageName.c_str() ) ) ;
     }
 
     
 
     #ifdef RUNTIMETEST
-        double cur_time_4 = eval->runTime(4, 0) ;
-        double cur_time_8 = eval->runTime(8, 0) ;
-        std::cout << "    @ Time elapsed for connectivity 4 :" << cur_time_4 << std::endl;
-        std::cout << "    @ Time elapsed for connectivity 8 :" << cur_time_8 << std::endl;
+       // double cur_time_4 = eval->runTime(4, 0) ;
+       // double cur_time_8 = eval->runTime(8, 0) ;
+     	 std::cout << "    @ Time elapsed for connectivity 4 : " << cur_time_4 << "  ms" << std::endl;
+         std::cout << "    @ Time elapsed for connectivity 8 : " << cur_time_8 << "  ms" << std::endl;
         total_runtime_4 += cur_time_4 ;
         total_runtime_8 += cur_time_8 ;
     #endif
@@ -72,8 +91,8 @@ void run_test(std::string imageName, std::string cclalgo)
     #endif
 
     std::cout << std::endl;
-    delete eval ;
-    eval = nullptr ; 
+   // delete eval ;
+   // eval = nullptr ; 
     
 
     
@@ -86,14 +105,15 @@ void run_test(std::string imageName, std::string cclalgo)
 
 int main( int argc, char* argv[])
 {
-    if (argc == 1 || argc == 2)
+    if (argc == 1 || argc == 2 || argc == 3 )
     {
         std::cerr << "  Invalid input, you need to provide the input image " << std::endl;
-        return ;
+        return 0  ;
     }
 
 
     std::string cclalgo = std::string( argv[1] ) ;
+	std::string path    = std::string( argv[2] ) ;
 
     if ( cclalgo != "DPL" && cclalgo != "NP" && cclalgo != "LE")
     {
@@ -106,11 +126,12 @@ int main( int argc, char* argv[])
     std::cout << "    @ algorithm : " << cclalgo << std::endl;
 
 
-    for ( int i = 2; i < argc; i++)
+    for ( int i = 3; i < argc; i++)
     {
-        std::string current = std::string( argv[i] ) ;
+        std::string current =  path + std::string( argv[i] ) ;
         run_test( current.c_str(), cclalgo) ;
 
 
     }
+	return 1 ;
 }

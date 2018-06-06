@@ -25,12 +25,12 @@ public:
 
     inline void convertToRGB()
     {
-        cv::cvtColor(grayImage, rgbImage, CV_GRAY2RBG) ;
+        cv::cvtColor(grayImage, rgbImage, cv::COLOR_GRAY2BGR) ;
     }; 
 
     void showImage()
     {
-        cv::namedWindow( "Display CCL Result", WINDOW_AUTOSIZE );
+        cv::namedWindow( "Display CCL Result",cv::WINDOW_AUTOSIZE );
         cv::imshow("Display CCL Result", rgbImage) ;
         cv::waitKey(0) ;
     }
