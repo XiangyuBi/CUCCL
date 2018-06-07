@@ -36,7 +36,7 @@ inline int Helper::IMin(int a, int b)
 class CCLLECPU
 {
 public:
-	void ccl(unsigned char* image, int* labelList, int width, int height, int degree_of_connectivity, unsigned char threshold) const;
+	void CudaCCL(unsigned char* image, int* labelList, int width, int height, int degree_of_connectivity, unsigned char threshold) ;
 
 private:
 	inline bool scanning(unsigned char* frameData, int* labelList, int* reference, bool& modificationFlag, int N, int widht, unsigned char threshold) const;
@@ -49,7 +49,7 @@ private:
 };
 
 
-inline void CCLLECPU::ccl(unsigned char* image, int* labelList, int width, int height, int degreeOfConnectivity, unsigned char threshold) const
+inline void CCLLECPU::CudaCCL(unsigned char* image, int* labelList, int width, int height, int degreeOfConnectivity, unsigned char threshold)
 {
 	if(image == nullptr || labelList == nullptr)
 		return;

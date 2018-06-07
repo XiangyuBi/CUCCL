@@ -1,0 +1,4 @@
+  CCL Algorithm Validation : 
+    @ System    : Unix
+    @ Algorithm : NP
+  Testing CCL on image :/home/xib008/xib008/CUCCL/dataset/files.txt
