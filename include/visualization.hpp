@@ -9,35 +9,7 @@
 
 #include <vector>
 #include <stdlib.h>
-/*
-struct VisualizationCCL
-{
 
-    cv::Mat* originImage ;
-    cv::Mat* grayImage   ;
-    cv::Mat* rgbImage    ;  
-
-    explicit VisualizationCCL( cv::Mat*  )
-        : originImage(cv::Mat(cv::imread(filename, cv::IMREAD_GRAYSCALE)))
-        {
-        }
-
-  
-    inline void convertToRGB()
-    {
-        cv::cvtColor(grayImage, rgbImage, cv::COLOR_GRAY2BGR) ;
-    }; 
-
-    void showImage()
-    {
-        cv::namedWindow( "Display CCL Result", WINDOW_AUTOSIZE );
-        cv::imshow("Display CCL Result", rgbImage) ;
-        cv::waitKey(0) ;
-    }
-
-};
-
-*/
 template < class CCL>
 class Visualization
 {
