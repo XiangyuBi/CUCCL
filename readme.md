@@ -26,6 +26,7 @@ Implementing 3 GPU-accelerated CCL algorithms based on CUDA. Comparing performan
 
 CUCCL evaluates the performance of CUDA algorithm by comparing the elapsing time and the correctness by number of labels. In addition, we use OpenCV to colorize between adjacent labels. If can check any of these functionality by uncommenting the macros defined in _/example/kernel_evaluation.cpp_ .
 
+    #define SAVEFILE 1        // Save the output files
     #define RUNTEST 1         // Perform the whole test
     #define RUNTIMETEST 1     // Perform timing check
     #define CORRECTNESSTEST 1 // Perform correctness check
@@ -38,11 +39,11 @@ Example for run Visualization :
     cd build
     cmake ..
     make
-    ./ccl_example ${PATH_OF_CUCCL}/dataset ${IMAGE_NAME_TO_VISUALIZE}
+    ./ccl_example LE ${PATH_OF_CUCCL}/dataset/ ${PATH_OF_CUCCL}/images/ ${IMAGE_NAME_TO_VISUALIZE}
 
 Alternatively, to run more tests:
 
-    ./ccl_example ${PATH_OF_CUCCL}/dataset $(ls ../dataset)
+    ./ccl_example LE ${PATH_OF_CUCCL}/dataset/ ${PATH_OF_CUCCL}/images/ $(ls ../dataset)
 
 
 ## Algorithms 
@@ -71,6 +72,11 @@ Some examples of visualization are shown below. Left side are origin images and 
 
 
 ![alt text](/images/result1.png)
+![alt text](/images/result2.png)
+![alt text](/images/result3.png)
+
+
+
 
 
 ### Performance 
@@ -100,6 +106,12 @@ The performance of the implementation can be inferred from the output logs, i.e.
     @ Average Time per Image Connection-8, GPU (ms) : 3.71094
     @ Average Time per Image Connection-4, CPU (ms) : 37.135
     @ Average Time per Image Connection-8, CPU (ms) : 60.3834
+
+### Outputs
+
+The output of the program should be a text file. Each row is the list of pixel indexes of a particular blob. The index is the flattened index of the pixels, following row-major format. The 2-D pixel indexes increase from top-left corner towards the bottom-right corners
+
+Examples are shown in _CUCCL/images/*.txt_
 
 ## References
 
