@@ -52,7 +52,7 @@ void testCCL(char const* flag)
 	}
     cout<<endl;
     
-    auto degreeOfConnectivity = 4;
+    auto degreeOfConnectivity = 8;
     unsigned char threshold = 0;
     
     if (flag == "LE")

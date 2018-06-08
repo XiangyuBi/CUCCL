@@ -12,19 +12,19 @@
 
 namespace CUCCL{
 
-const int BLOCK = 8;
+const int BLOCK = 16;
 
-__global__ void init_CCLDPL(int gLabel[], int width, int height)
+__global__ void init_CCLDPL(int *gLabel, int dataWidth, int dataHeight)
 {
-	int x = blockIdx.x * blockDim.x + threadIdx.x;
-	int y = blockIdx.y * blockDim.y + threadIdx.y;
+	int col = blockIdx.x * blockDim.x + threadIdx.x;
+	int row = blockIdx.y * blockDim.y + threadIdx.y;
 
-	if (x >= width || y >= height)
+	if (col >= dataWidth || row >= dataHeight)
 		return;
 
-	int id = x + y * width;
+	int idx = col + row * dataWidth;
 
-	gLabel[id] = id;
+	gLabel[idx] = idx;
 }
 
 
@@ -43,24 +43,24 @@ __global__ void dpl_kernel_4(unsigned char* gData, int* gLabel, int dataWidth, i
 		return;
 	
 
-	int label;
+	int lowestLabel;
       
       if (idx < W)
       {
-		label = gLabel[idx];
+		lowestLabel = gLabel[idx];
 		int i = idx + W;
 
 		while (i<W * H + idx)
 		
             // for (int i = idx + W; i < W * H + idx; i += W)
             {
-			if (abs(gData[i]-gData[i - W]) <= thre && label < gLabel[i])
+			if (abs(gData[i]-gData[i - W]) <= thre && lowestLabel < gLabel[i])
                   {
-                        gLabel[i] = label;
+                        gLabel[i] = lowestLabel;
                         *isChanged = true;
                   }
 			else 
-				label = gLabel[i];
+				lowestLabel = gLabel[i];
 			i += W;
             }
       }     
@@ -69,19 +69,19 @@ __global__ void dpl_kernel_4(unsigned char* gData, int* gLabel, int dataWidth, i
 
       if (idx < H)
       {
-		label = gLabel[idx*W];
+		lowestLabel = gLabel[idx*W];
 		int i = idx*W + 1;
 		
 		while (i<(idx+1)*W)
             // for (int i = idx*W + 1; i < (idx+1)*W; i ++)
             {
-			if (abs(gData[i]-gData[i - 1]) <= thre && label < gLabel[i])
+			if (abs(gData[i]-gData[i - 1]) <= thre && lowestLabel < gLabel[i])
                   {
-                        gLabel[i] = label;
+                        gLabel[i] = lowestLabel;
                         *isChanged = true;
                   }
 			else 
-				label = gLabel[i];
+				lowestLabel = gLabel[i];
 			i++;
             }
       }
@@ -90,19 +90,19 @@ __global__ void dpl_kernel_4(unsigned char* gData, int* gLabel, int dataWidth, i
 
       if (idx < W) 
       {
-		label = gLabel[W * (H - 1) + idx];
+		lowestLabel = gLabel[W * (H - 1) + idx];
 		int i = W * (H - 2)+idx;
 
 		while (i>=idx)
             // for (int i = W * (H - 2)+idx; i >= idx; i -= W)
             {
-			if (abs(gData[i]-gData[i + W]) <= thre && label < gLabel[i])
+			if (abs(gData[i]-gData[i + W]) <= thre && lowestLabel < gLabel[i])
                   {
-                        gLabel[i] = label;
+                        gLabel[i] = lowestLabel;
                         *isChanged = true;
                   }
 			else 
-				label = gLabel[i];
+				lowestLabel = gLabel[i];
 
 			i -= W;
             }
@@ -112,19 +112,19 @@ __global__ void dpl_kernel_4(unsigned char* gData, int* gLabel, int dataWidth, i
 	
       if (idx < H)
       {
-		label = gLabel[(idx + 1) * W - 1];
+		lowestLabel = gLabel[(idx + 1) * W - 1];
 		int i = (idx + 1) * W - 2;
 
 		while (i>=idx)
             // for (int i = (idx + 1) * W - 2; i >= idx * W; i--)
             {
-                  if (abs(gData[i]-gData[i + 1]) <= thre && label < gLabel[i])
+                  if (abs(gData[i]-gData[i + 1]) <= thre && lowestLabel < gLabel[i])
                   {
-                        gLabel[i] = label;
+                        gLabel[i] = lowestLabel;
                         *isChanged = true;
                   }
 			else 
-				label = gLabel[i];
+				lowestLabel = gLabel[i];
 
 			i--;
             }
@@ -134,68 +134,103 @@ __global__ void dpl_kernel_4(unsigned char* gData, int* gLabel, int dataWidth, i
 }
 
 
-__global__ void kernelDPL8(int dirId, unsigned char gData[], int gLabel[], bool* isChanged, int N, int width, int height, int thre)
+__global__ void dpl_kernel_8(unsigned char* gData, int* gLabel, int dataWidth, int dataHeight, bool* isChanged, int thre)
 {
-	int x = blockIdx.x * blockDim.x + threadIdx.x;
-	int y = blockIdx.y * blockDim.y + threadIdx.y;
+	int ty = threadIdx.y;
+	int tx = threadIdx.x;
+	int row = blockDim.y*blockIdx.y + ty;
+	int col = blockDim.x*blockIdx.x + tx;
 
-	if (x >= width || y >= height)
+	int W = dataWidth;
+	int H = dataHeight;
+
+	int idx = col + row * W;
+	if (idx >= W + H - 1) 
 		return;
 
-	int id = x + y * width;
-	int H = N / width;
-	int S, E1, E2, step;
-	switch (dirId)
-	{
-	case 0:
-		if (id >= width + H - 1) return;
-		if (id < width) S = id;
-		else S = (id - width + 1) * width;
-		E1 = width - 1; // % W
-		E2 = H - 1; // / W
-		step = width + 1;
-		break;
-	case 1:
-		if (id >= width + H - 1) return;
-		if (id < width) S = width * (H - 1) + id;
-		else S = (id - width + 1) * width;
-		E1 = width - 1; // % W
-		E2 = 0; // / W
-		step = -width + 1;
-		break;
-	case 2:
-		if (id >= width + H - 1) return;
-		if (id < width) S = width * (H - 1) + id;
-		else S = (id - width) * width + width - 1;
-		E1 = 0; // % W
-		E2 = 0; // / W
-		step = -(width + 1);
-		break;
-	case 3:
-		if (id >= width + H - 1) return;
-		if (id < width) S = id;
-		else S = (id - width + 1) * width + width - 1;
-		E1 = 0; // % W
-		E2 = H - 1; // / W
-		step = width - 1;
-		break;
-	}
+	int id, step, lowestLabel;
 
-	if (E1 == S % width || E2 == S / width)
-		return;
-	int label = gLabel[S];
-	for (int n = S + step;; n += step)
+	id = (idx < W) ? idx : (idx - W + 1) * W;
+	// E1 = W - 1; // % W
+	// E2 = H - 1; // / W
+	step = W + 1;
+	lowestLabel = gLabel[id];
+	while (true)
 	{
-		if (abs(gData[n]-gData[n - step]) <= thre && label < gLabel[n])
+		if (id % W == (W-1) || id / W ==  (H-1))
+			break;
+		if (abs(gData[id+step]-gData[id]) <= thre && lowestLabel < gLabel[id+step])
 		{
-			gLabel[n] = label;
+			gLabel[id+step] = lowestLabel;
 			*isChanged = true;
 		}
-		else label = gLabel[n];
-		if (E1 == n % width || E2 == n / width)
-			break;
+		else 
+			lowestLabel = gLabel[id+step];
+		id += step;
 	}
+	__syncthreads();
+
+
+	id = (idx < W) ? W * (H - 1) + idx : (idx - W + 1) * W;
+	step = -W + 1;
+	lowestLabel = gLabel[id];
+	while (true)
+	{
+		if ( id % W == (W-1) || id / W == 0)
+			break;
+		if (abs(gData[id+step]-gData[id]) <= thre && lowestLabel < gLabel[id+step])
+		{
+			gLabel[id+step] = lowestLabel;
+			*isChanged = true;
+		}
+		else 
+			lowestLabel = gLabel[id+step];
+		
+		id += step;
+	}
+	__syncthreads();
+
+
+	id = (idx < W) ? W * (H - 1) + idx : (idx - W) * W + W - 1;
+	step = -(W + 1);
+	lowestLabel = gLabel[id];
+	while (true)
+	{
+		if ( id % W == 0|| id / W == 0)
+			break;
+		if (abs(gData[id+step]-gData[id]) <= thre && lowestLabel < gLabel[id+step])
+		{
+			gLabel[id+step] = lowestLabel;
+			*isChanged = true;
+		}
+		else 
+			lowestLabel = gLabel[id+step];
+		
+		id += step;
+	}
+	__syncthreads();
+
+	
+	id = (idx < W) ? idx : (idx - W + 1) * W + W - 1;
+	step = W - 1;
+	lowestLabel = gLabel[id];
+	while (true)
+	{
+		if ( id % W == 0 || id / W == (H-1))
+			break;
+		if (abs(gData[id+step]-gData[id]) <= thre && lowestLabel < gLabel[id+step])
+		{
+			gLabel[id+step] = lowestLabel;
+			*isChanged = true;
+		}
+		else 
+			lowestLabel = gLabel[id+step];
+		id += step;
+	}
+	__syncthreads();
 }
+
+
 
 void CCLDPLGPU::CudaCCL(unsigned char* frame, int* labels, int width, int height, int degreeOfConnectivity, unsigned char thre)
 {
@@ -234,14 +269,12 @@ void CCLDPLGPU::CudaCCL(unsigned char* frame, int* labels, int width, int height
 		auto markFalgOnHost = false;
 		cudaMemcpy(isChanged, &markFalgOnHost, sizeof(bool), cudaMemcpyHostToDevice);
 
-		for (int i = 0; i < 4; i++)
+		dpl_kernel_4<<< grid, threads>>>(FrameDataOnDevice, LabelListOnDevice, width, height, isChanged, thre);
+		if (degreeOfConnectivity == 8)
 		{
-			dpl_kernel_4<<< grid, threads>>>(FrameDataOnDevice, LabelListOnDevice, width, height, isChanged, thre);
-			if (degreeOfConnectivity == 8)
-			{
-				kernelDPL8<<< grid, threads>>>(i, FrameDataOnDevice, LabelListOnDevice, isChanged, N, width, height, thre);
-			}
+			dpl_kernel_8<<< grid, threads>>>(FrameDataOnDevice, LabelListOnDevice, width, height, isChanged, thre);
 		}
+
 		cudaMemcpy(&markFalgOnHost, isChanged, sizeof(bool), cudaMemcpyDeviceToHost);
 
 		if (markFalgOnHost)
