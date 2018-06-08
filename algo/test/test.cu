@@ -108,7 +108,6 @@ void testCCL(char const* flag)
 
 int main()
 {
-	cout<<"test DPL algorithm..." << endl;
 	testCCL("DPL") ;
 
 
