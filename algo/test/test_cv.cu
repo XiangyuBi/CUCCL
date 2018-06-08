@@ -4,9 +4,9 @@
 #include "../CUCCL_DPL/CUCCL_DPL.cuh"
 
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/highgui/highgui.hpp>
+// #include <opencv2/core/core.hpp>
+// #include <opencv2/imgcodecs.hpp>
+// #include <opencv2/highgui/highgui.hpp>
 
 
 #include <iomanip>
@@ -14,7 +14,7 @@
 
 using namespace std; 
 using namespace CUCCL; 
-using namespace cv;
+// using namespace cv;
 /*
 
 void testCCL(char const* flag)

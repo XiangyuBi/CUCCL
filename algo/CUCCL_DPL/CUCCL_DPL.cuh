@@ -7,9 +7,7 @@ namespace CUCCL{
 
 __global__ void init_CCLDPL(int labelOnDevice[], int width, int height);
     
-__device__ unsigned char DiffDPL(unsigned char d1, unsigned char d2);
-    
-__global__ void kernelDPL(int I, unsigned char dataOnDevice[], int labelOnDevice[], bool* markFlagOnDevice, int N, int width, int height, int threshold);
+__global__ void dpl_kernel_4(unsigned char* gData, int* gLabel, int dataWidth, int dataHeight, bool* isChanged, int thre);
     
 __global__ void kernelDPL8(int I, unsigned char dataOnDevice[], int labelOnDevice[], bool* markFlagOnDevice, int N, int width, int height, int threshold);
     

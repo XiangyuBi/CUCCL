@@ -14,7 +14,7 @@ namespace CUCCL{
 
 const int BLOCK = 8;
 
-__global__ void init_CCLDPL(int labelOnDevice[], int width, int height)
+__global__ void init_CCLDPL(int gLabel[], int width, int height)
 {
 	int x = blockIdx.x * blockDim.x + threadIdx.x;
 	int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -24,68 +24,117 @@ __global__ void init_CCLDPL(int labelOnDevice[], int width, int height)
 
 	int id = x + y * width;
 
-	labelOnDevice[id] = id;
+	gLabel[id] = id;
 }
 
-__device__ unsigned char DiffDPL(unsigned char d1, unsigned char d2)
-{
-	return abs(d1 - d2);
-}
 
-__global__ void kernelDPL(int I, unsigned char dataOnDevice[], int labelOnDevice[], bool* markFlagOnDevice, int N, int width, int height, int threshold)
+__global__ void dpl_kernel_4(unsigned char* gData, int* gLabel, int dataWidth, int dataHeight, bool* isChanged, int thre)
 {
-	int x = blockIdx.x * blockDim.x + threadIdx.x;
-	int y = blockIdx.y * blockDim.y + threadIdx.y;
+	int ty = threadIdx.y;
+	int tx = threadIdx.x;
+	int row = blockDim.y*blockIdx.y + ty;
+	int col = blockDim.x*blockIdx.x + tx;
 
-	if (x >= width || y >= height)
+	int W = dataWidth;
+	int H = dataHeight;
+
+	int idx = col + row * W;
+	if (idx >= W || idx >= H)
 		return;
+	
 
-	int id = x + y * width;
-	int H = N / width;
-	int S, E, step;
-	switch (I)
-	{
-	case 0:
-		if (id >= width)
-			return;
-		S = id;
-		E = width * (H - 1) + id;
-		step = width;
-		break;
-	case 1:
-		if (id >= H)
-			return;
-		S = id * width;
-		E = S + width - 1;
-		step = 1;
-		break;
-	case 2:
-		if (id >= width) return;
-		S = width * (H - 1) + id;
-		E = id;
-		step = - width;
-		break;
-	case 3:
-		if (id >= H) return;
-		S = (id + 1) * width - 1;
-		E = id * width;
-		step = -1;
-		break;
-	}
+	int label;
+      
+      if (idx < W)
+      {
+		label = gLabel[idx];
+		int i = idx + W;
 
-	int label = labelOnDevice[S];
-	for (int n = S + step; n != E + step; n += step)
-	{
-		if (DiffDPL(dataOnDevice[n], dataOnDevice[n - step]) <= threshold && label < labelOnDevice[n])
-		{
-			labelOnDevice[n] = label;
-			*markFlagOnDevice = true;
-		}
-		else label = labelOnDevice[n];
-	}
+		while (i<W * H + idx)
+		
+            // for (int i = idx + W; i < W * H + idx; i += W)
+            {
+			if (abs(gData[i]-gData[i - W]) <= thre && label < gLabel[i])
+                  {
+                        gLabel[i] = label;
+                        *isChanged = true;
+                  }
+			else 
+				label = gLabel[i];
+			i += W;
+            }
+      }     
+      __syncthreads();
+
+
+      if (idx < H)
+      {
+		label = gLabel[idx*W];
+		int i = idx*W + 1;
+		
+		while (i<(idx+1)*W)
+            // for (int i = idx*W + 1; i < (idx+1)*W; i ++)
+            {
+			if (abs(gData[i]-gData[i - 1]) <= thre && label < gLabel[i])
+                  {
+                        gLabel[i] = label;
+                        *isChanged = true;
+                  }
+			else 
+				label = gLabel[i];
+			i++;
+            }
+      }
+      __syncthreads();
+
+
+      if (idx < W) 
+      {
+		label = gLabel[W * (H - 1) + idx];
+		int i = W * (H - 2)+idx;
+
+		while (i>=idx)
+            // for (int i = W * (H - 2)+idx; i >= idx; i -= W)
+            {
+			if (abs(gData[i]-gData[i + W]) <= thre && label < gLabel[i])
+                  {
+                        gLabel[i] = label;
+                        *isChanged = true;
+                  }
+			else 
+				label = gLabel[i];
+
+			i -= W;
+            }
+      }
+      __syncthreads();
+	
+	
+      if (idx < H)
+      {
+		label = gLabel[(idx + 1) * W - 1];
+		int i = (idx + 1) * W - 2;
+
+		while (i>=idx)
+            // for (int i = (idx + 1) * W - 2; i >= idx * W; i--)
+            {
+                  if (abs(gData[i]-gData[i + 1]) <= thre && label < gLabel[i])
+                  {
+                        gLabel[i] = label;
+                        *isChanged = true;
+                  }
+			else 
+				label = gLabel[i];
+
+			i--;
+            }
+      }
+      __syncthreads();
+
 }
 
-__global__ void kernelDPL8(int I, unsigned char dataOnDevice[], int labelOnDevice[], bool* markFlagOnDevice, int N, int width, int height, int threshold)
+
+__global__ void kernelDPL8(int dirId, unsigned char gData[], int gLabel[], bool* isChanged, int N, int width, int height, int thre)
 {
 	int x = blockIdx.x * blockDim.x + threadIdx.x;
 	int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -96,7 +145,7 @@ __global__ void kernelDPL8(int I, unsigned char dataOnDevice[], int labelOnDevic
 	int id = x + y * width;
 	int H = N / width;
 	int S, E1, E2, step;
-	switch (I)
+	switch (dirId)
 	{
 	case 0:
 		if (id >= width + H - 1) return;
@@ -134,21 +183,21 @@ __global__ void kernelDPL8(int I, unsigned char dataOnDevice[], int labelOnDevic
 
 	if (E1 == S % width || E2 == S / width)
 		return;
-	int label = labelOnDevice[S];
+	int label = gLabel[S];
 	for (int n = S + step;; n += step)
 	{
-		if (DiffDPL(dataOnDevice[n], dataOnDevice[n - step]) <= threshold && label < labelOnDevice[n])
+		if (abs(gData[n]-gData[n - step]) <= thre && label < gLabel[n])
 		{
-			labelOnDevice[n] = label;
-			*markFlagOnDevice = true;
+			gLabel[n] = label;
+			*isChanged = true;
 		}
-		else label = labelOnDevice[n];
+		else label = gLabel[n];
 		if (E1 == n % width || E2 == n / width)
 			break;
 	}
 }
 
-void CCLDPLGPU::CudaCCL(unsigned char* frame, int* labels, int width, int height, int degreeOfConnectivity, unsigned char threshold)
+void CCLDPLGPU::CudaCCL(unsigned char* frame, int* labels, int width, int height, int degreeOfConnectivity, unsigned char thre)
 {
 	auto N = width * height;
 
@@ -157,8 +206,8 @@ void CCLDPLGPU::CudaCCL(unsigned char* frame, int* labels, int width, int height
 
 	cudaMemcpy(FrameDataOnDevice, frame, sizeof(unsigned char) * N, cudaMemcpyHostToDevice);
 
-	bool* markFlagOnDevice;
-	cudaMalloc(reinterpret_cast<void**>(&markFlagOnDevice), sizeof(bool));
+	bool* isChanged;
+	cudaMalloc(reinterpret_cast<void**>(&isChanged), sizeof(bool));
 
 	dim3 grid((width + BLOCK - 1) / BLOCK, (height + BLOCK - 1) / BLOCK);
 	dim3 threads(BLOCK, BLOCK);
@@ -183,17 +232,17 @@ void CCLDPLGPU::CudaCCL(unsigned char* frame, int* labels, int width, int height
 	while (true)
 	{
 		auto markFalgOnHost = false;
-		cudaMemcpy(markFlagOnDevice, &markFalgOnHost, sizeof(bool), cudaMemcpyHostToDevice);
+		cudaMemcpy(isChanged, &markFalgOnHost, sizeof(bool), cudaMemcpyHostToDevice);
 
 		for (int i = 0; i < 4; i++)
 		{
-			kernelDPL<<< grid, threads >>>(i, FrameDataOnDevice, LabelListOnDevice, markFlagOnDevice, N, width, height, threshold);
+			dpl_kernel_4<<< grid, threads>>>(FrameDataOnDevice, LabelListOnDevice, width, height, isChanged, thre);
 			if (degreeOfConnectivity == 8)
 			{
-				kernelDPL<<< grid, threads>>>(i, FrameDataOnDevice, LabelListOnDevice, markFlagOnDevice, N, width, height, threshold);
+				kernelDPL8<<< grid, threads>>>(i, FrameDataOnDevice, LabelListOnDevice, isChanged, N, width, height, thre);
 			}
 		}
-		cudaMemcpy(&markFalgOnHost, markFlagOnDevice, sizeof(bool), cudaMemcpyDeviceToHost);
+		cudaMemcpy(&markFalgOnHost, isChanged, sizeof(bool), cudaMemcpyDeviceToHost);
 
 		if (markFalgOnHost)
 		{
