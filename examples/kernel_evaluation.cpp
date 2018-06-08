@@ -11,11 +11,11 @@
 
 using namespace CUCCL ;
 
-#define RUNTEST 1 
-#define RUNTIMETEST 1
-#define CORRECTNESSTEST 1
-#define SAVEFILE 1
-//#define VISUALIZATION 1
+//#define RUNTEST 1 
+//#define RUNTIMETEST 1
+//#define CORRECTNESSTEST 1
+//#define SAVEFILE 1
+#define VISUALIZATION 1
 
 double total_runtime_4 = 0 ;
 double total_runtime_8 = 0 ; 
@@ -138,9 +138,9 @@ void run_test(std::string image_path, std::string image_name , std::string cclal
 
 void run_visualization(std::string filename, std::string algo)
 {
-    if (algo == "NP")
+    if (algo == "LE")
     {
-        Visualization<CCLNPGPU> visl( filename.c_str(), 4, 0); 
+        Visualization<CCLLEGPU> visl( filename.c_str(), 4, 0); 
     }
     
 }
@@ -191,7 +191,7 @@ int main( int argc, char* argv[])
     #endif
 
     #ifdef VISUALIZATION
-    run_visualization( path+std::string(argv[3]), cclalgo ) ;
+    run_visualization( path+std::string(argv[4]), cclalgo ) ;
     #endif
 	return 1 ;
 }
