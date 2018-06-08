@@ -21,11 +21,13 @@ private:
     cv::Mat image ;
     int *label ;
     std::string image_name ;
+	std::string image_path ;
 
 public:
-    explicit Evaluation(char const* filename)
-        : image_name(std::string(filename))
-        , image(cv::Mat(cv::imread(filename, cv::IMREAD_GRAYSCALE)))
+    explicit Evaluation( std::string path, std::string name )
+        : image_name(name)
+		, image_path(path)
+        , image(cv::Mat(cv::imread( (path+name).c_str() , cv::IMREAD_GRAYSCALE)))
         {
             label = new int[image.size().width * image.size().height]{0} ;
         } ;
@@ -37,7 +39,7 @@ public:
     }
 
     double runTime(int degreeOfConnectivity, unsigned char threshold);
-    void   runOutput( char const* path) ;
+    void   runOutput( std::string output_path, std::string flag) ;
     int    runCorrectness(int cpuLabel) ;
 
 
@@ -48,7 +50,7 @@ public:
 
 
 template<class CCL>
-void Evaluation<CCL>::runOutput(std::string path)
+void Evaluation<CCL>::runOutput(std::string output_path, std::string flag)
 {
     auto* indexes = new std::vector< std::vector<int> >() ;
     std::unordered_map<int, int> the_labels ;
@@ -70,11 +72,15 @@ void Evaluation<CCL>::runOutput(std::string path)
             
         }
     }
-    std::string outputname = path + image_name + ".txt" ;
+	
+    std::string outputname = output_path  +  image_name + flag +  ".txt" ;
     std::ofstream output ;
-    output.open(outputname.c_str()) ;
-
-    for(int m = 0; m < indexes->size(); m++)
+    output.open(outputname.c_str(), std::ios::out) ;
+	//std::cout << indexes->size() << std::endl;
+	
+//	std::cout << "======================= SAVE FILE  =====================" << std::endl;
+	std::cout << outputname << std::endl;
+	for(int m = 0; m < indexes->size(); m++)
     {
         auto cur_vec = (*indexes)[m] ;
         for ( int n = 0; n < cur_vec.size(); n++)

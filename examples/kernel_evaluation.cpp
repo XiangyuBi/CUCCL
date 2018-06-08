@@ -44,26 +44,26 @@ std::string getOsName()
 }     
 
 
-void run_test(std::string imageName, std::string cclalgo, std::string output_path)
+void run_test(std::string image_path, std::string image_name , std::string cclalgo, std::string output_path)
 {
 
-    std::cout << "  Testing CCL on image :" << imageName << std::endl;
+    std::cout << "  Testing CCL on image :" << image_path + image_name  << std::endl;
    	double cur_time_4 ;
 	double cur_time_8 ;
 
 
     if (cclalgo == "LE")
     {	
-		Evaluation<CCLLEGPU>* eval = new Evaluation<CCLLEGPU> ( imageName.c_str() ) ;
+		Evaluation<CCLLEGPU>* eval = new Evaluation<CCLLEGPU> ( image_path , image_name ) ;
 		cur_time_4 = eval->runTime(4 , 0 );
 
-         # ifdef SAVEFILE
-            eval->runOutput(output_path + "_4") ;
+         #ifdef SAVEFILE
+            eval->runOutput(output_path, "_4") ;
          #endif
 
 		cur_time_8 = eval->runTime(8 , 0 );
-         # ifdef SAVEFILE
-            eval->runOutput(output_path + "_8") ;
+         #ifdef SAVEFILE
+            eval->runOutput(output_path, "_8") ;
          #endif
 		delete eval ;
 		eval = nullptr ;
@@ -71,17 +71,17 @@ void run_test(std::string imageName, std::string cclalgo, std::string output_pat
     else if (cclalgo == "DPL" )
     {
      	
-		auto* eval = new Evaluation<CCLDPLGPU>( imageName.c_str() ) ;
+		auto* eval = new Evaluation<CCLDPLGPU>( image_path, image_name ) ;
 		cur_time_4 = eval->runTime(4, 0);
 
-         # ifdef SAVEFILE
-            eval->runOutput(output_path + "_4") ;
+         #ifdef SAVEFILE
+            eval->runOutput(output_path,  "_4") ;
          #endif
 
 		cur_time_8 = eval->runTime(8, 0);
 
          # ifdef SAVEFILE
-            eval->runOutput(output_path + "_8") ;
+            eval->runOutput( output_path,  "_8") ;
          #endif
 
 		delete eval ;
@@ -89,17 +89,17 @@ void run_test(std::string imageName, std::string cclalgo, std::string output_pat
     }
     else 
     {	
-		auto* eval = new Evaluation<CCLNPGPU>( imageName.c_str() ) ;
+		auto* eval = new Evaluation<CCLNPGPU>( image_path, image_name ) ;
 		cur_time_4 = eval->runTime(4, 0);
 
         # ifdef SAVEFILE
-            eval->runOutput(output_path + "_4") ;
+            eval->runOutput(output_path,  "_4") ;
          #endif
 
 		cur_time_8 = eval->runTime(8, 0);
 
         # ifdef SAVEFILE
-            eval->runOutput(output_path + "_8") ;
+            eval->runOutput(output_path,  "_8") ;
          #endif
          
 		delete eval ;
@@ -109,7 +109,7 @@ void run_test(std::string imageName, std::string cclalgo, std::string output_pat
     
 
     #ifdef RUNTIMETEST
-	     auto* eval = new Evaluation<CCLLECPU>( imageName.c_str() ) ;
+	     auto* eval = new Evaluation<CCLLECPU>( image_path , image_name ) ;
 		 double cur_time_CPU_4 = eval->runTime( 4, 0) ;
 		 double cur_time_CPU_8 = eval->runTime( 8, 0) ;
 
@@ -174,10 +174,11 @@ int main( int argc, char* argv[])
 
     #ifdef RUNTEST
     
-    for ( int i = 3; i < argc; i++)
+    for ( int i = 4; i < argc; i++)
     {
-        std::string current =  path + std::string( argv[i] ) ;
-        run_test( current, cclalgo, output_path ) ;
+       // std::string current =  path + std::string( argv[i] ) ;
+        std::string image_name = std::string( argv[i]) ;
+		run_test( path, image_name,  cclalgo, output_path ) ;
     }
     std::cout << "  Validation Summary : " << std::endl ;
     std::cout << "    @ Algorithm         : " << cclalgo << std::endl;
