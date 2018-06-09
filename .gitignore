@@ -7,5 +7,9 @@ cmake_install.cmake
 install_manifest.txt
 compile_commands.json
 CTestTestfile.cmake
+<<<<<<< HEAD
 
 
+=======
+.vscode/
+>>>>>>> 40541c74ffcb4ca3b3ab1552434e61f97e587b9f

@@ -5,28 +5,30 @@
 
 namespace CUCCL{
 
-__global__ void init_CCLDPL(int labelOnDevice[], int width, int height);
+void init_label_list(int *labelList, int width, int height);
+
+void set_kernel_dim(int width, int height, dim3 &block, dim3 &grid);
+
+void print_init_labels(int width, int height, int* labels);
     
-__device__ unsigned char DiffDPL(unsigned char d1, unsigned char d2);
+__global__ void dpl_kernel_4(unsigned char* gData, int* gLabel, int dataWidth, int dataHeight, bool* isChanged, int thre);
     
-__global__ void kernelDPL(int I, unsigned char dataOnDevice[], int labelOnDevice[], bool* markFlagOnDevice, int N, int width, int height, int threshold);
-    
-__global__ void kernelDPL8(int I, unsigned char dataOnDevice[], int labelOnDevice[], bool* markFlagOnDevice, int N, int width, int height, int threshold);
+__global__ void dpl_kernel_8(unsigned char* gData, int* gLabel, int dataWidth, int dataHeight, bool* isChanged, int thre);
     
 class CCLDPLGPU
 {
 public:
     explicit CCLDPLGPU(unsigned char* dataOnDevice = nullptr, int* labelListOnDevice = nullptr)
-            : FrameDataOnDevice(dataOnDevice),
-              LabelListOnDevice(labelListOnDevice)
+            : gData(dataOnDevice),
+              gLabelList(labelListOnDevice)
     {
     }
     
     void CudaCCL(unsigned char* frame, int* labels, int width, int height, int degreeOfConnectivity, unsigned char threshold);
     
 private:
-    unsigned char* FrameDataOnDevice;
-    int* LabelListOnDevice;
+    unsigned char* gData;
+    int* gLabelList;
 };
 }
 
