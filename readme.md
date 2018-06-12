@@ -118,8 +118,7 @@ Examples are shown in _CUCCL/images/*.txt_
 1. K. Hawick, A. Leist and D. Playne, Parallel graph component labelling with GPUs and CUDA, Parallel Computing 36 (12) 655-678 (2010)
 2. O. Kalentev, A. Rai, S. Kemnitz and R. Schneider, Connected component labeling on a 2D grid using CUDA, J. Parallel Distrib. Comput. 71 (4) 615-620 (2011)
 3. V. M. A. Oliveira and R. A. Lotufo, A study on connected components labeling algorithms using GPUs, SIBGRAPI (2010)
-4. https://github.com/zhangxiaoya/CCL
-5. https://github.com/foota/ccl
+4. https://github.com/foota/ccl
 
 
 

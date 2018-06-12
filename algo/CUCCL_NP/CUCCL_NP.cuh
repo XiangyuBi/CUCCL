@@ -5,13 +5,11 @@
 
 namespace CUCCL{
 
-__device__ int IMinNP(int a, int b);
-
-__device__ unsigned char DiffNP(unsigned char d1, unsigned char d2);
+__device__ int atom_MIN(int a, int b);
 
 __global__ void InitCCL(int labelList[], int width, int height);
 
-__global__ void kernel(unsigned char dataOnDevice[], int labelOnDevice[], bool* markFlagOnDevice, int N, int width, int height, int threshold);
+__global__ void kernel4(unsigned char dataOnDevice[], int labelOnDevice[], bool* markFlagOnDevice, int N, int width, int height, int threshold);
 
 __global__ void kernel8(unsigned char dataOnDevice[], int labelOnDevice[], bool* markFlagOnDevice, int N, int width, int height, int threshold);
 
